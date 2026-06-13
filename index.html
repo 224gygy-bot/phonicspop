@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>파닉스팝! - 팝이와 함께하는 영어 모험</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#00B4D8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="파닉스팝">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <style>
+    :root {
+      --bg-sky: #E0F7FA;
+      --bg-cloud: #FFFFFF;
+      --primary: #00B4D8;
+      --primary-dark: #0077B6;
+      --accent-orange: #FF9F1C;
+      --accent-pink: #FF70A6;
+      --accent-purple: #9D4EDD;
+      --accent-green: #2EC4B6;
+      --accent-yellow: #FFD166;
+      --accent-red: #EF476F;
+      --text-main: #2D3436;
+      --text-light: #636E72;
+      --correct: #2EC4B6;
+      --incorrect: #EF476F;
+      --locked: #B2BEC3;
+      --star: #FFD166;
+      --popi: #00B4D8;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    html, body { width:100%; height:100%; overflow:hidden; font-family:'Pretendard','Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif; background:var(--bg-sky); color:var(--text-main); }
+    button { font-family:inherit; border:none; cursor:pointer; touch-action:manipulation; }
+    .hidden { display:none !important; }
+    .screen { position:fixed; inset:0; display:flex; flex-direction:column; overflow:hidden; }
+
+    /* ===== TOP BAR ===== */
+    .topbar { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; background:var(--bg-cloud); box-shadow:0 2px 12px rgba(0,0,0,0.08); z-index:100; flex-shrink:0; }
+    .topbar-left, .topbar-center, .topbar-right { display:flex; align-items:center; gap:6px; }
+    .topbar-center { position:absolute; left:50%; transform:translateX(-50%); }
+    .star-badge { display:flex; align-items:center; gap:4px; font-size:16px; font-weight:800; color:var(--accent-orange); }
+    .parent-btn { width:40px; height:40px; border-radius:50%; background:var(--locked); display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer; transition:transform 0.2s; }
+    .parent-btn:active { transform:scale(0.92); }
+    .back-btn { width:40px; height:40px; border-radius:50%; background:var(--locked); display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer; transition:transform 0.2s; }
+    .back-btn:active { transform:scale(0.92); }
+    .topbar-title { font-size:18px; font-weight:700; }
+    .shop-btn { width:40px; height:40px; border-radius:50%; background:var(--accent-yellow); display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer; transition:transform 0.2s; box-shadow:0 2px 6px rgba(255,209,102,0.4); }
+    .shop-btn:active { transform:scale(0.92); }
+
+    /* ===== CHILD SELECT ===== */
+    .child-select-screen { background:linear-gradient(180deg,#E0F7FA 0%,#B2EBF2 100%); justify-content:center; align-items:center; padding:24px; }
+    .popi-mascot { width:120px; height:120px; margin-bottom:16px; position:relative; }
+    .popi-body { width:100px; height:80px; background:var(--popi); border-radius:50% 50% 45% 45%; position:absolute; bottom:0; left:10px; box-shadow:0 4px 12px rgba(0,180,216,0.3); }
+    .popi-eye { width:14px; height:14px; background:white; border-radius:50%; position:absolute; top:20px; }
+    .popi-eye.left { left:28px; }
+    .popi-eye.right { left:58px; }
+    .popi-pupil { width:8px; height:8px; background:#333; border-radius:50%; position:absolute; top:3px; left:3px; }
+    .popi-mouth { width:24px; height:12px; border:2px solid #333; border-top:none; border-radius:0 0 20px 20px; position:absolute; top:40px; left:38px; }
+    .popi-blush { width:12px; height:6px; background:rgba(255,112,166,0.4); border-radius:50%; position:absolute; top:36px; }
+    .popi-blush.left { left:18px; }
+    .popi-blush.right { left:68px; }
+    .popi-bounce { animation:popiBounce 2s ease-in-out infinite; }
+    @keyframes popiBounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
+
+    .child-select-title { font-size:32px; font-weight:800; color:var(--primary-dark); text-align:center; margin-bottom:4px; }
+    .child-select-subtitle { font-size:18px; color:var(--text-light); text-align:center; margin-bottom:32px; }
+    .child-cards { display:flex; flex-direction:column; gap:16px; width:100%; max-width:300px; }
+    .child-card { background:var(--bg-cloud); border-radius:20px; padding:24px; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 24px rgba(0,0,0,0.1); cursor:pointer; transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1); border:3px solid transparent; }
+    .child-card:active { transform:scale(0.96); }
+    .child-card[data-child="child1"] { border-color:var(--accent-green); }
+    .child-card[data-child="child2"] { border-color:var(--accent-purple); }
+    .child-avatar { width:80px; height:80px; border-radius:50%; object-fit:cover; margin-bottom:8px; }
+    .child-name { font-size:20px; font-weight:700; }
+    .child-age { font-size:14px; color:var(--text-light); }
+    .child-hint { margin-top:24px; font-size:14px; color:var(--text-light); text-align:center; }
+
+    /* ===== ADVENTURE MAP (Horizontal Scroll) ===== */
+    .map-screen { background:linear-gradient(180deg,#E0F7FA 0%,#CAF0F8 100%); }
+    .map-scroll-area { flex:1; overflow-x:auto; overflow-y:hidden; padding:20px 0; scrollbar-width:none; }
+    .map-scroll-area::-webkit-scrollbar { display:none; }
+    .map-track { display:flex; align-items:center; gap:0; padding:0 40px; min-width:max-content; height:100%; position:relative; }
+    .map-path { position:absolute; top:50%; left:40px; right:40px; height:8px; background:linear-gradient(90deg,var(--locked),var(--accent-green)); border-radius:4px; transform:translateY(-50%); z-index:0; }
+    .map-path.locked-path { background:var(--locked); opacity:0.4; }
+    .map-island { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; min-width:100px; margin:0 10px; transition:transform 0.2s; }
+    .map-island:active { transform:scale(0.95); }
+    .island-ground { width:80px; height:40px; background:linear-gradient(180deg,#8D6E63,#6D4C41); border-radius:50% 50% 0 0; position:relative; margin-top:8px; }
+    .island-ground.locked { background:linear-gradient(180deg,#B0BEC5,#90A4AE); }
+    .island-ground.mastered { background:linear-gradient(180deg,#FFD166,#FF9F1C); box-shadow:0 0 20px rgba(255,209,102,0.5); }
+    .island-stage-num { position:absolute; top:-10px; left:50%; transform:translateX(-50%); width:28px; height:28px; background:var(--bg-cloud); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; box-shadow:0 2px 6px rgba(0,0,0,0.15); }
+    .island-stage-num.locked { background:var(--locked); color:white; }
+    .island-stage-num.mastered { background:var(--accent-yellow); color:var(--text-main); }
+    .island-friend { position:absolute; top:-36px; left:50%; transform:translateX(-50%); font-size:28px; filter:grayscale(100%) opacity(0.4); transition:all 0.5s; }
+    .island-friend.unlocked { filter:grayscale(0%) opacity(1); animation:friendPop 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+    @keyframes friendPop { 0%{transform:translateX(-50%) scale(0);} 100%{transform:translateX(-50%) scale(1);} }
+    .island-name { font-size:12px; font-weight:700; color:var(--text-light); margin-top:4px; text-align:center; }
+    .island-letters { font-size:10px; color:#aaa; text-align:center; max-width:90px; }
+    .island-cloud { position:absolute; top:-50px; left:50%; transform:translateX(-50%); font-size:48px; opacity:0; pointer-events:none; transition:opacity 0.5s; }
+    .island-cloud.show { opacity:1; }
+    .map-popi { position:absolute; z-index:2; font-size:32px; transition:all 0.6s cubic-bezier(0.34,1.56,0.64,1); filter:drop-shadow(0 4px 4px rgba(0,0,0,0.15)); }
+    .map-popi.bounce { animation:popiMapBounce 0.6s ease infinite; }
+    @keyframes popiMapBounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-6px);} }
+    .map-header { padding:0 16px 12px; }
+    .map-title { font-size:22px; font-weight:800; color:var(--primary-dark); }
+    .map-subtitle { font-size:13px; color:var(--text-light); margin-top:2px; }
+
+    /* ===== POPPI SPEECH BUBBLE ===== */
+    .poppi-bubble { position:relative; background:var(--bg-cloud); border-radius:16px; padding:12px 16px; margin:0 16px 16px; box-shadow:0 2px 10px rgba(0,0,0,0.08); font-size:14px; line-height:1.5; animation:fadeInUp 0.4s ease; }
+    .poppi-bubble::after { content:''; position:absolute; bottom:-8px; left:24px; width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:8px solid var(--bg-cloud); }
+    .poppi-bubble .poppi-face { font-size:20px; margin-right:6px; }
+
+    /* ===== MODE SELECTION ===== */
+    .mode-screen .screen-content { display:flex; flex-direction:column; justify-content:center; padding:16px; }
+    .mode-header { text-align:center; margin-bottom:24px; }
+    .mode-stage-title { font-size:22px; font-weight:700; }
+    .mode-stage-letters { font-size:15px; color:var(--text-light); margin-top:4px; }
+    .mode-instruction { text-align:center; font-size:15px; color:var(--text-light); margin-bottom:20px; }
+    .mode-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; max-width:400px; margin:0 auto; width:100%; }
+    .mode-card { background:var(--bg-cloud); border-radius:20px; padding:20px; display:flex; flex-direction:column; align-items:center; gap:6px; box-shadow:0 4px 15px rgba(0,0,0,0.07); cursor:pointer; transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1); border:2px solid transparent; }
+    .mode-card:active { transform:scale(0.95); }
+    .mode-card[data-mode="explore"] { border-color:var(--accent-green); }
+    .mode-card[data-mode="ox"] { border-color:var(--accent-orange); }
+    .mode-card[data-mode="choice"] { border-color:var(--accent-purple); }
+    .mode-card[data-mode="builder"] { border-color:var(--accent-yellow); }
+    .mode-icon { font-size:40px; }
+    .mode-name { font-size:15px; font-weight:700; }
+    .mode-desc { font-size:11px; color:var(--text-light); text-align:center; }
+
+    /* ===== GAMES ===== */
+    .game-screen .screen-content { padding:16px; overflow-y:auto; padding-bottom:80px; }
+    .game-mode-title { font-size:20px; font-weight:700; margin-bottom:4px; }
+    .game-instruction { font-size:14px; color:var(--text-light); margin-bottom:12px; }
+    .poppi-guide { display:flex; align-items:flex-start; gap:10px; margin-bottom:16px; }
+    .poppi-guide .poppi-mini { font-size:36px; flex-shrink:0; }
+    .poppi-guide .poppi-msg { background:var(--bg-cloud); border-radius:12px; padding:10px 14px; font-size:14px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+
+    /* Explorer */
+    .letter-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+    .letter-card { background:var(--bg-cloud); border:2px solid var(--accent-green); border-radius:16px; padding:12px 6px; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; transition:transform 0.15s; position:relative; }
+    .letter-card:active { transform:scale(0.92); border-color:var(--primary); }
+    .letter-card-text { font-size:34px; font-weight:800; text-transform:uppercase; }
+    .letter-card-emoji { font-size:20px; }
+    .letter-card-review { position:absolute; top:-6px; right:-6px; font-size:14px; background:white; border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
+    .word-scroll { display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; scrollbar-width:none; }
+    .word-scroll::-webkit-scrollbar { display:none; }
+    .word-card { background:var(--bg-cloud); border:2px solid var(--accent-purple); border-radius:12px; padding:8px 14px; display:flex; align-items:center; gap:6px; cursor:pointer; transition:transform 0.15s; flex-shrink:0; }
+    .word-card:active { transform:scale(0.93); }
+    .word-card-text { font-size:18px; font-weight:700; }
+    .word-card-emoji { font-size:18px; }
+
+    /* OX Quiz */
+    .quiz-container { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:50vh; gap:16px; }
+    .quiz-counter { font-size:13px; color:var(--text-light); font-weight:600; }
+    .quiz-sound-btn { width:100px; height:100px; border-radius:50%; background:linear-gradient(135deg,var(--accent-green),#1A9E8C); display:flex; align-items:center; justify-content:center; font-size:40px; cursor:pointer; box-shadow:0 6px 20px rgba(46,196,182,0.35); transition:transform 0.2s; animation:soundPulse 2s infinite; }
+    .quiz-sound-btn:active { transform:scale(0.93); }
+    @keyframes soundPulse { 0%,100%{box-shadow:0 6px 20px rgba(46,196,182,0.35);} 50%{box-shadow:0 6px 30px rgba(46,196,182,0.55);} }
+    .quiz-target { background:var(--bg-cloud); border-radius:18px; padding:20px 36px; box-shadow:0 4px 16px rgba(0,0,0,0.08); text-align:center; }
+    .quiz-target-text { font-size:44px; font-weight:800; text-transform:uppercase; }
+    .quiz-target-emoji { font-size:28px; margin-top:4px; }
+    .quiz-ox-buttons { display:flex; gap:14px; }
+    .quiz-o-btn, .quiz-x-btn { width:120px; height:72px; border-radius:16px; font-size:38px; font-weight:800; color:white; cursor:pointer; transition:transform 0.15s; box-shadow:0 4px 12px rgba(0,0,0,0.15); }
+    .quiz-o-btn { background:linear-gradient(135deg,var(--correct),#1A9E8C); }
+    .quiz-x-btn { background:linear-gradient(135deg,var(--incorrect),#D63056); }
+    .quiz-o-btn:active, .quiz-x-btn:active { transform:scale(0.95); }
+    .quiz-feedback { min-height:36px; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; gap:6px; }
+    .quiz-feedback.correct { color:var(--correct); }
+    .quiz-feedback.wrong { color:var(--incorrect); }
+
+    /* Choice */
+    .choice-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; width:100%; max-width:380px; }
+    .choice-card { background:var(--bg-cloud); border:2px solid #DFE6E9; border-radius:16px; padding:16px; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; transition:transform 0.15s, border-color 0.15s, background 0.2s; }
+    .choice-card:active { transform:scale(0.96); }
+    .choice-card.selected-correct { border-color:var(--correct); background:#E8F8F5; }
+    .choice-card.selected-wrong { border-color:var(--incorrect); background:#FDEDEC; animation:shake 0.4s ease; }
+    .choice-card-text { font-size:28px; font-weight:800; text-transform:uppercase; }
+    .choice-card-word { font-size:20px; font-weight:700; }
+    .choice-card-emoji { font-size:20px; }
+
+    /* Builder */
+    .builder-container { display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:8px; }
+    .builder-hint-emoji { font-size:56px; animation:floatEmoji 2s ease-in-out infinite; }
+    @keyframes floatEmoji { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
+    .builder-target-sound { width:56px; height:56px; border-radius:50%; background:var(--accent-yellow); display:flex; align-items:center; justify-content:center; font-size:24px; cursor:pointer; box-shadow:0 4px 10px rgba(255,209,102,0.35); }
+    .builder-slots { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; }
+    .builder-slot { width:52px; height:52px; border:2px dashed #DFE6E9; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:800; background:rgba(255,255,255,0.5); transition:all 0.2s; }
+    .builder-slot.filled { border-style:solid; border-color:var(--accent-green); background:white; }
+    .builder-tiles { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:8px; }
+    .builder-tile { width:52px; height:52px; background:linear-gradient(135deg,var(--accent-orange),#E8890B); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800; color:white; cursor:pointer; box-shadow:0 4px 8px rgba(255,159,28,0.3); transition:transform 0.15s; user-select:none; }
+    .builder-tile:active { transform:scale(0.92); }
+    .builder-tile.used { opacity:0.3; pointer-events:none; }
+    .builder-hint { font-size:14px; color:var(--text-light); text-align:center; }
+
+    /* Combo System */
+    .combo-display { position:fixed; top:60px; left:50%; transform:translateX(-50%) scale(0); background:linear-gradient(135deg,var(--accent-orange),var(--accent-red)); color:white; padding:8px 20px; border-radius:20px; font-size:16px; font-weight:800; z-index:200; box-shadow:0 4px 12px rgba(0,0,0,0.2); transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+    .combo-display.show { transform:translateX(-50%) scale(1); }
+
+    /* ===== REWARD SHOP ===== */
+    .shop-screen .screen-content { padding:16px; overflow-y:auto; padding-bottom:80px; }
+    .shop-header { text-align:center; margin-bottom:20px; }
+    .shop-title { font-size:22px; font-weight:700; }
+    .shop-subtitle { font-size:13px; color:var(--text-light); margin-top:4px; }
+    .shop-points { display:flex; align-items:center; justify-content:center; gap:6px; font-size:28px; font-weight:800; color:var(--accent-orange); margin-bottom:20px; }
+    .shop-grid { display:flex; flex-direction:column; gap:12px; max-width:400px; margin:0 auto; width:100%; }
+    .shop-item { background:var(--bg-cloud); border-radius:16px; padding:16px; display:flex; align-items:center; gap:12px; box-shadow:0 2px 10px rgba(0,0,0,0.06); border:2px solid transparent; transition:all 0.2s; }
+    .shop-item.affordable { border-color:var(--accent-yellow); cursor:pointer; }
+    .shop-item.affordable:active { transform:scale(0.98); }
+    .shop-item.locked { opacity:0.55; border-color:var(--locked); }
+    .shop-item-cost { width:56px; height:56px; border-radius:50%; background:var(--accent-yellow); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--text-main); flex-shrink:0; }
+    .shop-item-cost span { font-size:18px; }
+    .shop-item-info { flex:1; }
+    .shop-item-name { font-size:16px; font-weight:700; }
+    .shop-item-desc { font-size:12px; color:var(--text-light); margin-top:2px; }
+    .shop-item-status { font-size:12px; font-weight:700; padding:4px 10px; border-radius:10px; background:var(--locked); color:white; flex-shrink:0; }
+    .shop-item-status.ready { background:var(--accent-green); }
+    .shop-empty { text-align:center; color:var(--text-light); font-size:14px; padding:40px; }
+
+    /* Reward Box Animation */
+    .reward-box-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:300; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+    .reward-box-overlay.show { opacity:1; pointer-events:auto; }
+    .reward-box { width:200px; height:200px; background:linear-gradient(135deg,var(--accent-orange),var(--accent-red)); border-radius:24px; display:flex; align-items:center; justify-content:center; font-size:80px; cursor:pointer; box-shadow:0 10px 40px rgba(0,0,0,0.3); transition:transform 0.2s; animation:boxWiggle 2s ease-in-out infinite; }
+    .reward-box:active { transform:scale(0.95); }
+    @keyframes boxWiggle { 0%,100%{transform:rotate(-3deg);} 50%{transform:rotate(3deg);} }
+    .reward-box-open { width:280px; background:var(--bg-cloud); border-radius:24px; padding:28px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.3); animation:popIn 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+    .reward-box-open .box-title { font-size:20px; font-weight:700; margin-bottom:8px; }
+    .reward-box-open .box-reward { font-size:18px; font-weight:800; color:var(--accent-orange); margin-bottom:16px; }
+    .reward-box-open .box-btn { width:100%; height:48px; background:var(--accent-green); color:white; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer; }
+    .confetti-container { position:fixed; inset:0; pointer-events:none; z-index:400; }
+    .confetti { position:absolute; width:8px; height:8px; border-radius:2px; animation:confettiFall 1.5s ease forwards; }
+    @keyframes confettiFall { 0%{transform:translateY(-20px) rotate(0deg); opacity:1;} 100%{transform:translateY(100vh) rotate(720deg); opacity:0;} }
+
+    /* ===== SESSION END ===== */
+    .session-end { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:50vh; gap:14px; text-align:center; padding:16px; }
+    .session-end-emoji { font-size:56px; }
+    .session-end-title { font-size:24px; font-weight:700; }
+    .session-end-msg { font-size:15px; color:var(--text-light); line-height:1.5; }
+    .session-end-stars { font-size:22px; font-weight:800; color:var(--accent-orange); }
+    .session-end-badges { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin:8px 0; }
+    .badge { background:linear-gradient(135deg,#FFF6D6,#FFE9A8); border:2px solid var(--accent-yellow); border-radius:12px; padding:8px 14px; font-size:13px; font-weight:700; }
+    .session-end-btn { width:200px; height:52px; background:var(--primary); color:white; border-radius:14px; font-size:16px; font-weight:700; cursor:pointer; margin-top:8px; transition:transform 0.15s; }
+    .session-end-btn:active { transform:scale(0.97); }
+    .session-end-friend { background:linear-gradient(135deg,#FFF0F5,#FFE4EC); border:3px solid var(--accent-pink); border-radius:18px; padding:14px 20px; display:flex; flex-direction:column; align-items:center; gap:4px; max-width:280px; animation:popIn 0.5s ease; }
+    .session-end-friend .sef-emoji { font-size:44px; }
+    .session-end-friend .sef-text { font-size:15px; font-weight:700; }
+    .session-end-friend .sef-sub { font-size:12px; color:var(--text-light); }
+
+    /* ===== CERTIFICATE ===== */
+    .cert-card { background:linear-gradient(160deg,#FFFDF5,#FFF6D6); border:4px solid var(--accent-yellow); border-radius:24px; padding:24px 20px; max-width:360px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.12); }
+    .cert-emoji { font-size:48px; animation:celebrateEmoji 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+    .cert-title { font-size:21px; font-weight:800; color:var(--primary-dark); margin:6px 0 4px; }
+    .cert-name { font-size:18px; font-weight:700; margin-bottom:6px; }
+    .cert-sub { font-size:13px; color:var(--text-light); line-height:1.6; margin-bottom:12px; }
+    .cert-friends { display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-bottom:12px; }
+    .cert-friend { width:48px; display:flex; flex-direction:column; align-items:center; gap:2px; }
+    .cert-friend .cf-emoji { width:40px; height:40px; border-radius:50%; background:var(--bg-cloud); display:flex; align-items:center; justify-content:center; font-size:20px; box-shadow:0 2px 6px rgba(0,0,0,0.08); border:2px solid var(--accent-yellow); }
+    .cert-friend .cf-name { font-size:10px; font-weight:700; color:var(--text-light); }
+    .cert-msg { font-size:14px; font-weight:700; line-height:1.6; margin-bottom:16px; }
+
+    /* ===== PARENT DASHBOARD ===== */
+    .dashboard-screen { background:#F5F7FA; }
+    .dashboard-screen .screen-content { padding:16px; overflow-y:auto; padding-bottom:80px; }
+    .dashboard-header { margin-bottom:20px; }
+    .dashboard-title { font-size:22px; font-weight:700; }
+    .dashboard-subtitle { font-size:13px; color:var(--text-light); margin-top:2px; }
+    .dashboard-section { margin-bottom:24px; }
+    .dashboard-section-title { font-size:16px; font-weight:700; margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+    .heatmap-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .heatmap-card { border-radius:12px; padding:12px; color:white; cursor:pointer; transition:transform 0.15s; min-height:80px; display:flex; flex-direction:column; justify-content:center; }
+    .heatmap-card:active { transform:scale(0.97); }
+    .heatmap-card.green { background:var(--correct); }
+    .heatmap-card.yellow { background:var(--accent-yellow); color:var(--text-main); }
+    .heatmap-card.red { background:var(--incorrect); }
+    .heatmap-card.gray { background:var(--locked); }
+    .heatmap-stage-num { font-size:11px; font-weight:700; opacity:0.9; }
+    .heatmap-stage-name { font-size:12px; font-weight:600; margin-top:2px; opacity:0.95; }
+    .heatmap-accuracy { font-size:20px; font-weight:800; margin-top:4px; }
+    .heatmap-detail { margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.2); font-size:10px; display:none; }
+    .heatmap-detail.open { display:block; }
+    .heatmap-detail-item { display:flex; justify-content:space-between; margin-top:2px; }
+
+    .reward-setup { background:var(--bg-cloud); border-radius:16px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+    .reward-setup-title { font-size:15px; font-weight:700; margin-bottom:12px; }
+    .reward-setup-desc { font-size:12px; color:var(--text-light); margin-bottom:12px; line-height:1.5; }
+    .reward-input-row { display:flex; gap:8px; margin-bottom:8px; align-items:center; }
+    .reward-input-points { width:80px; height:40px; border:2px solid var(--border); border-radius:10px; padding:0 10px; font-size:14px; font-family:inherit; text-align:center; outline:none; }
+    .reward-input-points:focus { border-color:var(--primary); }
+    .reward-input-text { flex:1; height:40px; border:2px solid var(--border); border-radius:10px; padding:0 12px; font-size:14px; font-family:inherit; outline:none; }
+    .reward-input-text:focus { border-color:var(--primary); }
+    .reward-add-btn { width:40px; height:40px; border-radius:10px; background:var(--accent-green); color:white; font-size:20px; font-weight:700; cursor:pointer; transition:transform 0.15s; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .reward-add-btn:active { transform:scale(0.95); }
+    .reward-list { display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+    .reward-list-item { display:flex; align-items:center; gap:8px; background:#F8F9FA; border-radius:10px; padding:8px 12px; font-size:14px; }
+    .reward-list-points { background:var(--accent-yellow); color:var(--text-main); font-size:12px; font-weight:700; padding:2px 8px; border-radius:8px; flex-shrink:0; }
+    .reward-list-text { flex:1; }
+    .reward-list-del { width:28px; height:28px; border-radius:50%; background:var(--incorrect); color:white; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:transform 0.15s; }
+    .reward-list-del:active { transform:scale(0.9); }
+    .reward-empty { font-size:13px; color:var(--text-light); font-style:italic; text-align:center; padding:16px; }
+
+    .dashboard-close { width:100%; height:48px; background:var(--primary); color:white; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; transition:transform 0.15s; margin-top:8px; }
+    .dashboard-close:active { transform:scale(0.97); }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    .fade-in-up { animation:fadeInUp 0.4s ease forwards; }
+    @keyframes popIn { 0% { transform:scale(0.7); opacity:0; } 100% { transform:scale(1); opacity:1; } }
+    .pop-in { animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+    @keyframes celebrateEmoji { 0% { transform:scale(0) rotate(-20deg); opacity:0; } 50% { transform:scale(1.3) rotate(10deg); opacity:1; } 100% { transform:scale(1) rotate(0); opacity:1; } }
+    @keyframes shake { 0%,100% { transform:translateX(0); } 20% { transform:translateX(-8px); } 40% { transform:translateX(8px); } 60% { transform:translateX(-8px); } 80% { transform:translateX(8px); } }
+    .shake { animation:shake 0.4s ease; }
+    @keyframes starFloat { 0% { transform:translateY(0) scale(1); opacity:1; } 50% { transform:translateY(-30px) scale(1.4); opacity:0.8; } 100% { transform:translateY(-60px) scale(1); opacity:0; } }
+    .star-anim { position:fixed; font-size:28px; z-index:200; pointer-events:none; animation:starFloat 0.9s ease forwards; }
+    @keyframes flashCorrect { 0% { background:rgba(46,196,182,0.4); } 100% { background:transparent; } }
+    .flash-correct { animation:flashCorrect 0.4s ease; }
+    @keyframes flashWrong { 0% { background:rgba(239,71,111,0.25); } 100% { background:transparent; } }
+    .flash-wrong { animation:flashWrong 0.4s ease; }
+    @keyframes popiJump { 0%,100% { transform:translateY(0); } 30% { transform:translateY(-20px) scale(1.1); } 60% { transform:translateY(0) scale(1); } }
+    .popi-jump { animation:popiJump 0.6s ease; }
+    @keyframes popiSad { 0%,100% { transform:rotate(0); } 25% { transform:rotate(-8deg); } 75% { transform:rotate(8deg); } }
+    .popi-sad { animation:popiSad 0.5s ease; }
+  </style>
+</head>
+<body>
+
+<!-- ========== COMBO DISPLAY ========== -->
+<div class="combo-display hidden" id="combo-display">🔥 콤보 x3</div>
+
+<!-- ========== REWARD BOX OVERLAY ========== -->
+<div class="reward-box-overlay hidden" id="reward-box-overlay">
+  <div id="reward-box-content">
+    <div class="reward-box" id="reward-box-closed" onclick="openRewardBox()">🎁</div>
+  </div>
+</div>
+<div class="confetti-container hidden" id="confetti-container"></div>
+
+<!-- ========== SCREEN: CHILD SELECTION ========== -->
+<div class="screen child-select-screen" id="screen-child-select">
+  <div class="popi-mascot popi-bounce">
+    <div class="popi-body">
+      <div class="popi-eye left"><div class="popi-pupil"></div></div>
+      <div class="popi-eye right"><div class="popi-pupil"></div></div>
+      <div class="popi-mouth"></div>
+      <div class="popi-blush left"></div>
+      <div class="popi-blush right"></div>
+    </div>
+  </div>
+  <div class="child-select-title">파닉스팝!</div>
+  <div class="child-select-subtitle">팝이와 함께하는 영어 모험</div>
+  <div class="child-cards">
+    <div class="child-card" data-child="child1" onclick="selectChild('child1')">
+      <img class="child-avatar" src="avatar-boy.png" alt="하윤" style="width:80px;height:80px;border-radius:50%;object-fit:cover;">
+      <div class="child-name">하윤</div>
+      <div class="child-age">7살</div>
+    </div>
+    <div class="child-card" data-child="child2" onclick="selectChild('child2')">
+      <img class="child-avatar" src="avatar-girl.jpg" alt="하은" style="width:80px;height:80px;border-radius:50%;object-fit:cover;">
+      <div class="child-name">하은</div>
+      <div class="child-age">9살</div>
+    </div>
+  </div>
+  <div class="child-hint">👆 이름을 눌러 모험을 시작하세요!</div>
+</div>
+
+<!-- ========== SCREEN: ADVENTURE MAP ========== -->
+<div class="screen map-screen hidden" id="screen-map">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="star-badge" id="star-display">⭐ 0</div>
+    </div>
+    <div class="topbar-center">
+      <div class="topbar-title">모험 지도</div>
+    </div>
+    <div class="topbar-right">
+      <div class="shop-btn" onclick="openShop()" aria-label="상점">🎁</div>
+      <div class="parent-btn" onclick="openDashboard()" aria-label="부모님 대시보드">👤</div>
+    </div>
+  </div>
+  <div class="poppi-bubble" id="map-poppi-bubble">
+    <span class="poppi-face">🐸</span> 안녕! 오늘은 어떤 섬을 탐험할까?
+  </div>
+  <div class="map-scroll-area" id="map-scroll-area">
+    <div class="map-track" id="map-track">
+      <div class="map-path" id="map-path"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCREEN: MODE SELECTION ========== -->
+<div class="screen mode-screen hidden" id="screen-mode-select">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="back-btn" onclick="goToMap()" aria-label="뒤로">←</div>
+    </div>
+    <div class="topbar-center">
+      <div class="topbar-title" id="mode-select-title">게임 선택</div>
+    </div>
+    <div class="topbar-right" style="width:40px;"></div>
+  </div>
+  <div class="screen-content">
+    <div class="mode-header">
+      <div class="mode-stage-title" id="mode-stage-title">🎯 1단계</div>
+      <div class="mode-stage-letters" id="mode-stage-letters">s a t p i n</div>
+    </div>
+    <div class="poppi-guide">
+      <div class="poppi-mini">🐸</div>
+      <div class="poppi-msg" id="mode-poppi-msg">어떤 게임을 할까? 같이 재미있게 해보자!</div>
+    </div>
+    <div class="mode-grid">
+      <div class="mode-card" data-mode="explore" onclick="selectMode('explore')">
+        <div class="mode-icon">🔍</div>
+        <div class="mode-name">소리 탐색</div>
+        <div class="mode-desc">글자를 눌러 소리 들어요</div>
+      </div>
+      <div class="mode-card" data-mode="ox" onclick="selectMode('ox')">
+        <div class="mode-icon">⭕</div>
+        <div class="mode-name">OX 퀴즈</div>
+        <div class="mode-desc">소리를 듣고 맞춰요</div>
+      </div>
+      <div class="mode-card" data-mode="choice" onclick="selectMode('choice')">
+        <div class="mode-icon">🔤</div>
+        <div class="mode-name">객관식</div>
+        <div class="mode-desc">보기 중에 골라요</div>
+      </div>
+      <div class="mode-card" data-mode="builder" onclick="selectMode('builder')">
+        <div class="mode-icon">🧩</div>
+        <div class="mode-name">단어 만들기</div>
+        <div class="mode-desc">글자를 순서대로 맞춰요</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCREEN: GAME EXPLORER ========== -->
+<div class="screen game-screen hidden" id="screen-explore">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="back-btn" onclick="goToModeSelect()" aria-label="뒤로">←</div>
+    </div>
+    <div class="topbar-center">
+      <div class="star-badge" id="explore-star-display">⭐ 0</div>
+    </div>
+    <div class="topbar-right" style="width:40px;"></div>
+  </div>
+  <div class="screen-content">
+    <div class="game-mode-title" style="color:var(--accent-green);">🔍 소리 탐색</div>
+    <div class="poppi-guide">
+      <div class="poppi-mini">🐸</div>
+      <div class="poppi-msg">글자를 눌러 소리를 들어봐! ⭐를 모아보자!</div>
+    </div>
+    <div class="letter-grid" id="explorer-letter-grid"></div>
+    <div style="font-size:13px;color:var(--text-light);margin-bottom:6px;">단어들 🔤</div>
+    <div class="word-scroll" id="explorer-word-scroll"></div>
+    <div style="margin-top:12px;text-align:center;font-size:13px;color:var(--text-light);padding:8px;background:rgba(255,255,255,0.7);border-radius:10px;" id="explorer-counter">🔊 0번 들었어요</div>
+  </div>
+</div>
+
+<!-- ========== SCREEN: GAME OX ========== -->
+<div class="screen game-screen hidden" id="screen-ox">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="back-btn" onclick="goToModeSelect()" aria-label="뒤로">←</div>
+    </div>
+    <div class="topbar-center">
+      <div class="star-badge" id="ox-star-display">⭐ 0</div>
+    </div>
+    <div class="topbar-right" style="width:40px;"></div>
+  </div>
+  <div class="screen-content">
+    <div class="quiz-container" id="ox-container">
+      <div class="quiz-counter" id="ox-counter">1 / 10</div>
+      <div class="quiz-sound-btn" id="ox-sound-btn" onclick="playCurrentOXSound()">🔊</div>
+      <div class="quiz-sound-label" style="font-size:13px;color:var(--text-light);">소리를 들어봐요! 👆</div>
+      <div class="quiz-target" id="ox-target">
+        <div class="quiz-target-text" id="ox-target-text">A</div>
+        <div class="quiz-target-emoji" id="ox-target-emoji">🍎</div>
+      </div>
+      <div class="quiz-question-text" style="font-size:17px;font-weight:600;">이 소리가 맞아요?</div>
+      <div class="quiz-ox-buttons">
+        <button class="quiz-o-btn" onclick="answerOX(true)">O</button>
+        <button class="quiz-x-btn" onclick="answerOX(false)">X</button>
+      </div>
+      <div class="quiz-feedback" id="ox-feedback"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCREEN: GAME CHOICE ========== -->
+<div class="screen game-screen hidden" id="screen-choice">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="back-btn" onclick="goToModeSelect()" aria-label="뒤로">←</div>
+    </div>
+    <div class="topbar-center">
+      <div class="star-badge" id="choice-star-display">⭐ 0</div>
+    </div>
+    <div class="topbar-right" style="width:40px;"></div>
+  </div>
+  <div class="screen-content">
+    <div class="quiz-container" id="choice-container">
+      <div class="quiz-counter" id="choice-counter">1 / 10</div>
+      <div class="quiz-sound-btn" style="background:linear-gradient(135deg,var(--accent-purple),#8A3FD0);animation:none;" id="choice-sound-btn" onclick="playCurrentChoiceSound()">🔊</div>
+      <div class="quiz-sound-label" style="font-size:13px;color:var(--text-light);">소리를 들어봐요! 👆</div>
+      <div class="quiz-question-text" id="choice-question-text" style="font-size:17px;font-weight:600;">어떤 글자일까요?</div>
+      <div class="choice-grid" id="choice-grid"></div>
+      <div class="quiz-feedback" id="choice-feedback"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCREEN: GAME BUILDER ========== -->
+<div class="screen game-screen hidden" id="screen-builder">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="back-btn" onclick="goToModeSelect()" aria-label="뒤로">←</div>
+    </div>
+    <div class="topbar-center">
+      <div class="star-badge" id="builder-star-display">⭐ 0</div>
+    </div>
+    <div class="topbar-right" style="width:40px;"></div>
+  </div>
+  <div class="screen-content">
+    <div class="builder-container" id="builder-container">
+      <div class="quiz-counter" id="builder-counter">1 / 8</div>
+      <div class="builder-hint-emoji" id="builder-hint-emoji">🐱</div>
+      <div class="builder-target-sound" onclick="playCurrentBuilderSound()">🔊</div>
+      <div class="quiz-sound-label" style="font-size:13px;color:var(--text-light);">단어를 들어봐요! 👆</div>
+      <div class="builder-slots" id="builder-slots"></div>
+      <div class="builder-tiles" id="builder-tiles"></div>
+      <div class="builder-hint" id="builder-hint">글자를 순서대로 눌러 단어를 완성하세요! 🧩</div>
+      <div class="quiz-feedback" id="builder-feedback"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCREEN: REWARD SHOP ========== -->
+<div class="screen shop-screen hidden" id="screen-shop">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="back-btn" onclick="goToMap()" aria-label="뒤로">←</div>
+    </div>
+    <div class="topbar-center">
+      <div class="topbar-title">🎁 별 상점</div>
+    </div>
+    <div class="topbar-right" style="width:40px;"></div>
+  </div>
+  <div class="screen-content">
+    <div class="shop-header">
+      <div class="shop-title">⭐ 별 상점</div>
+      <div class="shop-subtitle">모은 별로 보상을 교환해요!</div>
+    </div>
+    <div class="shop-points" id="shop-points">⭐ 0</div>
+    <div class="poppi-guide">
+      <div class="poppi-mini">🐸</div>
+      <div class="poppi-msg" id="shop-poppi-msg">별을 모아서 원하는 보상을 골라봐!</div>
+    </div>
+    <div class="shop-grid" id="shop-grid"></div>
+    <div style="margin-top:20px;max-width:400px;margin-left:auto;margin-right:auto;width:100%;">
+      <div style="background:var(--bg-cloud);border-radius:16px;padding:16px;border:2px dashed var(--primary);">
+        <div style="font-size:14px;font-weight:700;color:var(--primary);margin-bottom:8px;">📝 내가 원하는 보상 요청하기</div>
+        <div style="font-size:12px;color:var(--text-light);margin-bottom:10px;">원하는 보상이 없으면 직접 적어서 부모님에게 보내요!</div>
+        <div class="reward-input-row" style="margin-bottom:8px;">
+          <input type="number" class="reward-input-points" id="shop-request-points" placeholder="3000" min="1" style="width:70px;">
+          <span style="font-size:14px;font-weight:700;">⭐</span>
+          <input type="text" class="reward-input-text" id="shop-request-text" placeholder="보상 이름을 직접 입력하세요">
+        </div>
+        <button onclick="requestReward()" style="width:100%;height:44px;background:var(--primary);color:white;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;">부모님에게 보내기 📨</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCREEN: PARENT DASHBOARD ========== -->
+<div class="screen dashboard-screen hidden" id="screen-dashboard">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="back-btn" onclick="closeDashboard()" aria-label="닫기">←</div>
+    </div>
+    <div class="topbar-center">
+      <div class="topbar-title">부모님 대시보드</div>
+    </div>
+    <div class="topbar-right" style="width:40px;"></div>
+  </div>
+  <div class="screen-content">
+    <div class="dashboard-header">
+      <div class="dashboard-title">👨‍👩‍👧 부모님 대시보드</div>
+      <div class="dashboard-subtitle" id="dashboard-child-name">민서의 학습 현황</div>
+    </div>
+
+    <div class="dashboard-section">
+      <div class="dashboard-section-title">📊 단계별 정답률</div>
+      <div class="heatmap-grid" id="heatmap-grid"></div>
+    </div>
+
+    <div class="dashboard-section">
+      <div class="dashboard-section-title">⭐ 별 상점 보상 설정</div>
+      <div class="reward-setup">
+        <div class="reward-setup-desc">아이가 ⭐을 모아 교환할 보상을 <b>직접 입력</b>하세요.<br>예: 3000⭐ → 아이스크림, 5000⭐ → 학원 안 가기</div>
+        <div class="reward-input-row">
+          <input type="number" class="reward-input-points" id="reward-points-input" placeholder="3000" min="1">
+          <span style="font-size:14px;font-weight:700;">⭐</span>
+          <input type="text" class="reward-input-text" id="reward-text-input" placeholder="보상 이름을 직접 입력하세요 (예: 아이스크림, 학원 안 가기)">
+          <div class="reward-add-btn" onclick="addReward()">+</div>
+        </div>
+        <div class="reward-list" id="reward-list"></div>
+        <div id="reward-requests-section" style="margin-top:16px;display:none;">
+          <div style="font-size:14px;font-weight:700;color:var(--primary);margin-bottom:8px;">📝 아이가 요청한 보상</div>
+          <div class="reward-list" id="reward-requests-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <button class="dashboard-close" onclick="closeDashboard()">← 닫기</button>
+  </div>
+</div>
+
+<!-- ========== SCREEN: SESSION END ========== -->
+<div class="screen hidden" id="screen-session-end">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="back-btn" onclick="goToMap()" aria-label="홈">←</div>
+    </div>
+    <div class="topbar-center">
+      <div class="star-badge" id="end-star-display">⭐ 0</div>
+    </div>
+    <div class="topbar-right" style="width:40px;"></div>
+  </div>
+  <div class="screen-content" style="display:flex;align-items:center;justify-content:center;">
+    <div class="session-end">
+      <div class="session-end-emoji" id="session-end-emoji">🎉</div>
+      <div class="session-end-title" id="session-end-title">잘했어요!</div>
+      <div class="session-end-msg" id="session-end-msg">게임을 끝까지 해냈어요!</div>
+      <div class="session-end-stars" id="session-end-stars">+0 ⭐</div>
+      <div class="session-end-badges" id="session-end-badges"></div>
+      <div id="session-end-friend" class="session-end-friend hidden"></div>
+      <div id="session-end-mastered" class="session-end-friend hidden" style="background:linear-gradient(135deg,#FFFDF5,#FFF6D6);border-color:var(--accent-yellow);"></div>
+      <button class="session-end-btn" id="session-end-btn" onclick="goToMap()">모험 지도로 가기 🗺️</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCREEN: CERTIFICATE ========== -->
+<div class="screen hidden" id="screen-certificate">
+  <div class="screen-content" style="display:flex;align-items:center;justify-content:center;">
+    <div class="cert-card pop-in">
+      <div class="cert-emoji">🏆</div>
+      <div class="cert-title">파닉스 마스터 인증서</div>
+      <div class="cert-name" id="cert-child-name">하윤</div>
+      <div class="cert-sub">10단계를 모두 정복했어요!<br>이제 영어 소리를 다 읽을 수 있어요! 🎉</div>
+      <div class="cert-friends" id="cert-friends"></div>
+      <div class="cert-msg">처음부터 끝까지 너 혼자 해냈어.<br>너는 <b>무엇이든 할 수 있는 사람</b>이야! 🌟</div>
+      <button class="session-end-btn" onclick="goToMap()">모험 지도로 가기 🗺️</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  DATA
+// ============================================================
+const STAGES = [
+  { id:1, name:"SATPIN", letters:["s","a","t","p","i","n"], lw:["snake","apple","tiger","pig","igloo","nest"], letterEmojis:["🐍","🍎","🐯","🐷","🧊","🪹"], words:["sat","pin","tap","nap","tip"], wordEmojis:["🪑","📌","👆","😴","💡"], islandEmoji:"🌴" },
+  { id:2, name:"CK EHR", letters:["c","k","e","h","r","m","d"], lw:["cat","kiwi","egg","house","rabbit","mouse","dog"], letterEmojis:["🐱","🥝","🥚","🏠","🐰","🐭","🐶"], words:["cat","hen","red","mad","kit"], wordEmojis:["🐱","🐔","🔴","😠","🎒"], islandEmoji:"🏔️" },
+  { id:3, name:"GOULFB", letters:["g","o","u","l","f","b"], lw:["goat","orange","umbrella","leaf","fox","bee"], letterEmojis:["🐐","🍊","☂️","🍃","🦊","🐝"], words:["dog","sun","bus","log","fun"], wordEmojis:["🐕","☀️","🚌","🪵","😄"], islandEmoji:"🏝️" },
+  { id:4, name:"JVWX", letters:["j","v","w","x","y","z","qu"], lw:["jam","violin","wind","box","yoyo","zebra","queen"], letterEmojis:["🍓","🎻","💨","📦","🪀","🦓","👸"], words:["fox","jam","win","zip"], wordEmojis:["🦊","🍓","🏆","🤐"], islandEmoji:"🌋" },
+  { id:5, name:"SH CH", letters:["sh","ch","th","ng"], lw:["ship","chip","thumb","ring"], letterEmojis:["🚢","🍟","👍","💍"], words:["ship","chip","that","ring"], wordEmojis:["🚢","🍟","👆","💍"], islandEmoji:"🚢" },
+  { id:6, name:"Magic E", letters:["a_e","i_e","o_e","u_e"], lw:["cake","bike","home","cube"], letterEmojis:["🎂","🚲","🏠","🧊"], words:["cake","bike","home","cute"], wordEmojis:["🎂","🚲","🏠","🎀"], islandEmoji:"🏰" },
+  { id:7, name:"Vowel", letters:["ai","ee","oa","ie"], lw:["rain","feet","boat","pie"], letterEmojis:["🌧️","👣","⛵","🥧"], words:["rain","feet","boat","pie"], wordEmojis:["🌧️","🦶","⛵","🥧"], islandEmoji:"🌈" },
+  { id:8, name:"OO AR", letters:["oo","ar","or","er","ir","ur"], lw:["moon","car","fork","fern","bird","nurse"], letterEmojis:["🌙","🚗","🍴","🌿","🐦","👩‍⚕️"], words:["moon","car","fork","bird"], wordEmojis:["🌙","🚗","🍴","🐦"], islandEmoji:"🌙" },
+  { id:9, name:"Dip", letters:["ow","ou","oi","oy","aw"], lw:["cow","mouth","coin","toy","paw"], letterEmojis:["🐮","👄","🪙","🧸","🐾"], words:["cow","out","coin","paw"], wordEmojis:["🐮","🚪","🪙","🐾"], islandEmoji:"🎪" },
+  { id:10, name:"Blends", letters:["bl","st","gr","nd"], lw:["blue","star","grapes","hand"], letterEmojis:["🔵","⭐","🍇","✋"], words:["the","said","was","you"], wordEmojis:["📖","💬","🧺","👇"], sightWords:true, sentences:["The cat is big.","I said no.","Was it fun?","You can do it!"], islandEmoji:"🏆" }
+];
+
+const ANIMAL_FRIENDS = [
+  { id:1, emoji:'🐍', name:'사미', line:'사미 뱀이 친구가 되었어요!' },
+  { id:2, emoji:'🐱', name:'코코', line:'코코 고양이가 친구가 되었어요!' },
+  { id:3, emoji:'🦊', name:'폭시', line:'폭시 여우가 친구가 되었어요!' },
+  { id:4, emoji:'🦓', name:'지지', line:'지지 얼룩말이 친구가 되었어요!' },
+  { id:5, emoji:'🐧', name:'펭키', line:'펭키 펭귄이 친구가 되었어요!' },
+  { id:6, emoji:'🐻', name:'보보', line:'보보 곰이 친구가 되었어요!' },
+  { id:7, emoji:'🐦', name:'로빈', line:'로빈 새가 친구가 되었어요!' },
+  { id:8, emoji:'🦉', name:'올리', line:'올리 부엉이가 친구가 되었어요!' },
+  { id:9, emoji:'🐮', name:'데이지', line:'데이지 소가 친구가 되었어요!' },
+  { id:10, emoji:'🦄', name:'스타', line:'스타 유니콘이 친구가 되었어요! 모험단 완성!' }
+];
+
+const CHILDREN = {
+  child1: { name: "하윤", age: 7, avatar: "avatar-boy.png" },
+  child2: { name: "하은", age: 9, avatar: "avatar-girl.jpg" }
+};
+
+const POPPI_MESSAGES = {
+  start: ["안녕! 나는 팝이야! 🐸", "오늘도 모험하러 왔구나!", "영어 소리, 같이 재미있게 배워보자!"],
+  correct: ["와! 정답이야! 🎉", "너 정말 똑똑하다! ⭐", "팝이도 깜짝 놀랐어!", "최고야! 계속 가보자!"],
+  wrong: ["음... 다시 생각해볼까? 🤔", "괜찮아! 다시 해보자! 💪", "팝이가 힌트 줄게!", "조금만 더 집중! 🎯"],
+  combo: ["콤보다! 🔥", "대박! 연속 정답!", "슈퍼팝 모드! 💫", "무서워! 너무 잘해!"],
+  mastered: ["단계 정복! 너 최고! 🏆", "새로운 친구를 만났어!", "다음 섬으로 가보자! 🗺️", "점점 더 강해지고 있어!"],
+  shop: ["별을 모아서 원하는 보상을 골라봐!", "부모님이 준비한 선물이 있어! 🎁", "뭐가 나올까? 기대돼!"]
+};
+
+const PRAISES = ["잘했어!", "대단해!", "멋져!", "최고야!", "훌륭해!", "정확해!"];
+const ENCOURAGES = ["다시 해볼까? 🤗", "한 번 더! 💪", "조금만 더 생각해보자 🤔", "괜찮아, 다시 해보자! 🌟"];
+
+// ============================================================
+//  SAVE / LOAD
+// ============================================================
+const STORAGE_KEY = 'phonicspop_v2';
+
+function defaultChildData() {
+  return { stars: 0, lastPlay: null, progress: {}, rewards: [], redeemed: [], rewardRequests: [] };
+}
+
+function loadDB() {
+  try { const raw = localStorage.getItem(STORAGE_KEY); if (!raw) return null; return JSON.parse(raw); }
+  catch (e) { return null; }
+}
+function saveDB() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); } catch (e) {} }
+
+let DB = loadDB();
+if (!DB) DB = { child1: defaultChildData(), child2: defaultChildData() };
+['child1','child2'].forEach(c => { 
+  if (!DB[c]) DB[c] = defaultChildData(); 
+  if (!DB[c].rewards) DB[c].rewards = []; 
+  if (!DB[c].redeemed) DB[c].redeemed = []; 
+  if (!DB[c].rewardRequests) DB[c].rewardRequests = []; 
+});
+
+// ============================================================
+//  STATE
+// ============================================================
+const S = {
+  childId: null,
+  data: null,
+  stageId: null,
+  mode: null,
+  explorerTapCount: 0,
+  comboCount: 0,
+  session: { questions: [], currentIdx: 0, score: 0, badges: [] }
+};
+
+// ============================================================
+//  TTS
+// ============================================================
+let enVoice = null, koVoice = null;
+function pickVoices() {
+  if (!window.speechSynthesis) return;
+  const vs = window.speechSynthesis.getVoices();
+  enVoice = vs.find(v => /en[-_]US/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang)) || null;
+  koVoice = vs.find(v => /ko[-_]KR/i.test(v.lang)) || vs.find(v => /^ko/i.test(v.lang)) || null;
+}
+if (window.speechSynthesis) { pickVoices(); window.speechSynthesis.onvoiceschanged = pickVoices; }
+
+function speakRaw(text, lang, rate, pitch, voice) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = lang; u.rate = rate; u.pitch = pitch;
+  if (voice) u.voice = voice;
+  window.speechSynthesis.speak(u);
+}
+function speakSound(keyword) { speakRaw(keyword, 'en-US', 0.85, 1.1, enVoice); }
+function speakWord(word) { speakRaw(word, 'en-US', 0.8, 1.1, enVoice); }
+function speakSentence(s) { speakRaw(s, 'en-US', 0.9, 1.05, enVoice); }
+function speakKorean(text) { speakRaw(text, 'ko-KR', 1.0, 1.1, koVoice); }
+function speakPraise() { speakKorean(PRAISES[Math.floor(Math.random()*PRAISES.length)]); }
+function speakPoppi(type) {
+  const msgs = POPPI_MESSAGES[type] || POPPI_MESSAGES.start;
+  speakKorean(msgs[Math.floor(Math.random()*msgs.length)]);
+}
+
+function lwFor(stageId, letter) {
+  const st = STAGES.find(s => s.id === stageId); if (!st) return letter;
+  const i = st.letters.indexOf(letter); return i >= 0 ? st.lw[i] : letter;
+}
+
+// ============================================================
+//  NAVIGATION
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+function todayStr() { return new Date().toISOString().slice(0,10); }
+
+function updateStreakOnEnter() {
+  const t = todayStr();
+  const last = S.data.lastPlay;
+  if (last !== t) { S.data.lastPlay = t; saveDB(); }
+}
+
+function selectChild(childId) {
+  S.childId = childId;
+  S.data = DB[childId];
+  updateStreakOnEnter();
+  updateStarDisplay();
+  renderMap();
+  speakPoppi('start');
+  showScreen('screen-map');
+}
+function goToMap() { updateStarDisplay(); renderMap(); showScreen('screen-map'); }
+
+function goToModeSelect() {
+  const stage = STAGES.find(s => s.id === S.stageId);
+  document.getElementById('mode-stage-title').textContent = '🎯 ' + stage.id + '단계: ' + stage.name;
+  document.getElementById('mode-stage-letters').textContent = stage.letters.join(' ');
+  document.getElementById('mode-select-title').textContent = stage.id + '단계 게임';
+  const msgs = ["어떤 게임을 할까? 같이 재미있게 해보자!", "팝이가 도와줄게! 자신있게 도전해봐!", "오늘은 어떤 소리를 탐험할까?"];
+  document.getElementById('mode-poppi-msg').textContent = msgs[Math.floor(Math.random()*msgs.length)];
+  showScreen('screen-mode-select');
+}
+
+function openShop() {
+  document.getElementById('shop-points').textContent = '⭐ ' + S.data.stars;
+  const msgs = ["별을 모아서 원하는 보상을 골라봐!", "부모님이 준비한 선물이 있어! 🎁", "뭐가 나올까? 기대돼!"];
+  document.getElementById('shop-poppi-msg').textContent = msgs[Math.floor(Math.random()*msgs.length)];
+  renderShop();
+  showScreen('screen-shop');
+}
+
+function openDashboard() {
+  const child = CHILDREN[S.childId];
+  document.getElementById('dashboard-child-name').textContent = child.name + '의 학습 현황';
+  renderHeatmap();
+  renderRewardList();
+  renderRewardRequests();
+  showScreen('screen-dashboard');
+}
+function closeDashboard() { saveDB(); showScreen('screen-map'); }
+
+// ============================================================
+//  ADVENTURE MAP (Horizontal)
+// ============================================================
+function renderMap() {
+  const track = document.getElementById('map-track');
+  const path = document.getElementById('map-path');
+  // remove old islands
+  Array.from(track.querySelectorAll('.map-island')).forEach(el => el.remove());
+  Array.from(track.querySelectorAll('.map-popi')).forEach(el => el.remove());
+
+  let pathMastered = true;
+  STAGES.forEach((stage, idx) => {
+    const mastered = isStageMastered(stage.id);
+    const unlocked = isStageUnlocked(stage.id);
+    if (!mastered) pathMastered = false;
+
+    const island = document.createElement('div');
+    island.className = 'map-island' + (unlocked ? '' : ' locked');
+    if (unlocked) island.onclick = () => { S.stageId = stage.id; goToModeSelect(); };
+
+    const friend = ANIMAL_FRIENDS.find(f => f.id === stage.id);
+    const groundClass = mastered ? 'mastered' : (unlocked ? '' : 'locked');
+    const numClass = mastered ? 'mastered' : (unlocked ? '' : 'locked');
+    const friendClass = mastered ? 'unlocked' : '';
+
+    island.innerHTML = `
+      <div class="island-friend ${friendClass}">${friend.emoji}</div>
+      <div class="island-stage-num ${numClass}">${stage.id}</div>
+      <div class="island-ground ${groundClass}">${stage.islandEmoji}</div>
+      <div class="island-name">${stage.name}</div>
+      <div class="island-letters">${stage.letters.join(' ')}</div>
+      ${!unlocked ? '<div class="island-cloud show">☁️</div>' : ''}
+    `;
+    track.appendChild(island);
+  });
+
+  // Poppi on current island
+  const currentIdx = S.stageId ? S.stageId - 1 : 0;
+  const islands = track.querySelectorAll('.map-island');
+  if (islands[currentIdx]) {
+    const poppi = document.createElement('div');
+    poppi.className = 'map-popi bounce';
+    poppi.textContent = '🐸';
+    poppi.style.bottom = '70px';
+    const islandRect = islands[currentIdx].getBoundingClientRect();
+    const trackRect = track.getBoundingClientRect();
+    poppi.style.left = (islandRect.left - trackRect.left + islandRect.width/2 - 16) + 'px';
+    track.appendChild(poppi);
+  }
+
+  // Scroll to current
+  setTimeout(() => {
+    const area = document.getElementById('map-scroll-area');
+    const target = islands[currentIdx];
+    if (target && area) {
+      area.scrollLeft = target.offsetLeft - area.offsetWidth/2 + target.offsetWidth/2;
+    }
+  }, 100);
+}
+
+// ============================================================
+//  PROGRESS
+// ============================================================
+function getStageProgress(stageId) {
+  return S.data.progress[stageId] || { totalQ: 0, correctQ: 0, itemStats: {} };
+}
+function getStageAccuracy(stageId) {
+  const p = getStageProgress(stageId);
+  if (p.totalQ === 0) return -1;
+  return Math.round((p.correctQ / p.totalQ) * 100);
+}
+function isStageMastered(stageId) {
+  const p = getStageProgress(stageId);
+  return p.totalQ >= 12 && (p.correctQ / p.totalQ) >= 0.8;
+}
+function isStageUnlocked(stageId) {
+  if (stageId === 1) return true;
+  return isStageMastered(stageId - 1);
+}
+function getStatusColor(stageId) {
+  const acc = getStageAccuracy(stageId);
+  if (acc < 0) return 'gray';
+  if (acc >= 80) return 'green';
+  if (acc >= 60) return 'yellow';
+  return 'red';
+}
+function recordAnswer(stageId, item, isCorrect) {
+  if (!S.data.progress[stageId]) S.data.progress[stageId] = { totalQ: 0, correctQ: 0, itemStats: {} };
+  const p = S.data.progress[stageId];
+  p.totalQ++; if (isCorrect) p.correctQ++;
+  if (!p.itemStats[item]) p.itemStats[item] = { seen: 0, correct: 0 };
+  p.itemStats[item].seen++; if (isCorrect) p.itemStats[item].correct++;
+  saveDB();
+}
+
+// ============================================================
+//  STARS
+// ============================================================
+function addStar(count) {
+  S.data.stars += count;
+  updateStarDisplay();
+  saveDB();
+  const star = document.createElement('div');
+  star.className = 'star-anim';
+  star.textContent = '⭐';
+  star.style.left = '50%'; star.style.top = '40%';
+  document.body.appendChild(star);
+  setTimeout(() => star.remove(), 1000);
+}
+function updateStarDisplay() {
+  if (!S.data) return;
+  const txt = '⭐ ' + S.data.stars;
+  document.querySelectorAll('.star-badge').forEach(el => el.textContent = txt);
+}
+
+// ============================================================
+//  COMBO
+// ============================================================
+function showCombo() {
+  if (S.comboCount < 3) return;
+  const el = document.getElementById('combo-display');
+  el.textContent = '🔥 콤보 x' + S.comboCount;
+  el.classList.remove('hidden');
+  el.classList.add('show');
+  speakPoppi('combo');
+  setTimeout(() => { el.classList.remove('show'); el.classList.add('hidden'); }, 1500);
+}
+
+// ============================================================
+//  MODE SELECTION
+// ============================================================
+function selectMode(mode) {
+  S.mode = mode;
+  S.session = { questions: [], currentIdx: 0, score: 0, badges: [] };
+  S.comboCount = 0;
+  switch(mode) {
+    case 'explore': initExplorer(); break;
+    case 'ox': initOX(); break;
+    case 'choice': initChoice(); break;
+    case 'builder': initBuilder(); break;
+  }
+}
+
+// ============================================================
+//  GAME: EXPLORER
+// ============================================================
+function initExplorer() {
+  S.explorerTapCount = 0;
+  const stage = STAGES.find(s => s.id === S.stageId);
+  const prevStage = STAGES.find(s => s.id === S.stageId - 1);
+  const grid = document.getElementById('explorer-letter-grid');
+  const wordScroll = document.getElementById('explorer-word-scroll');
+  grid.innerHTML = ''; wordScroll.innerHTML = '';
+
+  let allLetters = [];
+  if (prevStage) {
+    const rc = Math.min(3, prevStage.letters.length);
+    shuffleArray([...Array(prevStage.letters.length).keys()]).slice(0, rc).forEach(i => {
+      allLetters.push({ letter: prevStage.letters[i], emoji: prevStage.letterEmojis[i], kw: prevStage.lw[i], review: true });
+    });
+  }
+  stage.letters.forEach((l, i) => allLetters.push({ letter: l, emoji: stage.letterEmojis[i], kw: stage.lw[i], review: false }));
+  allLetters = shuffleArray(allLetters);
+
+  allLetters.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'letter-card pop-in';
+    card.innerHTML = `
+      <div class="letter-card-text">${item.letter}</div>
+      <div class="letter-card-emoji">${item.emoji}</div>
+      ${item.review ? '<div class="letter-card-review">↩️</div>' : ''}
+    `;
+    card.onclick = () => {
+      S.explorerTapCount++;
+      document.getElementById('explorer-counter').textContent = '🔊 ' + S.explorerTapCount + '번 들었어요';
+      card.style.transform = 'scale(0.92)';
+      setTimeout(() => card.style.transform = '', 150);
+      speakSound(item.kw);
+    };
+    grid.appendChild(card);
+  });
+
+  let allWords = [];
+  if (prevStage) {
+    const c = Math.min(2, prevStage.words.length);
+    shuffleArray([...Array(prevStage.words.length).keys()]).slice(0, c).forEach(i => {
+      allWords.push({ word: prevStage.words[i], emoji: prevStage.wordEmojis[i], review: true });
+    });
+  }
+  stage.words.forEach((w, i) => allWords.push({ word: w, emoji: stage.wordEmojis[i], review: false }));
+  allWords.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'word-card fade-in';
+    card.innerHTML = `
+      <span class="word-card-text">${item.word}</span>
+      <span class="word-card-emoji">${item.emoji}</span>
+      ${item.review ? '<span class="word-card-review">↩️</span>' : ''}
+    `;
+    card.onclick = () => {
+      S.explorerTapCount++;
+      document.getElementById('explorer-counter').textContent = '🔊 ' + S.explorerTapCount + '번 들었어요';
+      card.style.transform = 'scale(0.93)';
+      setTimeout(() => card.style.transform = '', 150);
+      speakWord(item.word);
+    };
+    wordScroll.appendChild(card);
+  });
+
+  if (stage.sentences) {
+    stage.sentences.forEach(sen => {
+      const card = document.createElement('div');
+      card.className = 'word-card fade-in';
+      card.style.borderColor = 'var(--accent-pink)';
+      card.innerHTML = `<span class="word-card-text" style="font-size:14px;">${sen}</span>`;
+      card.onclick = () => speakSentence(sen);
+      wordScroll.appendChild(card);
+    });
+  }
+
+  document.getElementById('explore-star-display').textContent = '⭐ ' + S.data.stars;
+  showScreen('screen-explore');
+}
+
+// ============================================================
+//  GAME: OX
+// ============================================================
+function initOX() {
+  generateOXQuestions();
+  S.session.currentIdx = 0; S.session.score = 0; S.comboCount = 0;
+  loadOXQuestion();
+  document.getElementById('ox-star-display').textContent = '⭐ ' + S.data.stars;
+  showScreen('screen-ox');
+}
+
+function generateOXQuestions() {
+  const stage = STAGES.find(s => s.id === S.stageId);
+  const prevStage = STAGES.find(s => s.id === S.stageId - 1);
+  const qs = [];
+  stage.letters.forEach((l, i) => {
+    qs.push({ kind:'letter', sound:lwFor(stage.id,l), shownLetter:l, emoji:stage.letterEmojis[i], isCorrect:true, stageId:stage.id });
+  });
+  shuffleArray([...Array(stage.words.length).keys()]).slice(0,2).forEach(i => {
+    qs.push({ kind:'word', sound:stage.words[i], shownLetter:stage.words[i], emoji:stage.wordEmojis[i], isCorrect:true, stageId:stage.id });
+  });
+  if (prevStage) {
+    shuffleArray([...Array(prevStage.letters.length).keys()]).slice(0,2).forEach(i => {
+      qs.push({ kind:'letter', sound:lwFor(prevStage.id, prevStage.letters[i]), shownLetter:prevStage.letters[i], emoji:prevStage.letterEmojis[i], isCorrect:true, stageId:prevStage.id });
+    });
+  }
+  const n = stage.letters.length;
+  for (let i = 0; i < n && qs.filter(q=>!q.isCorrect).length < 3; i++) {
+    const wrongIdx = (i + 1) % n;
+    qs.push({ kind:'letter', sound:lwFor(stage.id, stage.letters[i]), shownLetter:stage.letters[wrongIdx], emoji:stage.letterEmojis[i], isCorrect:false, stageId:stage.id });
+  }
+  S.session.questions = shuffleArray(qs);
+}
+
+function loadOXQuestion() {
+  const q = S.session.questions[S.session.currentIdx];
+  document.getElementById('ox-counter').textContent = (S.session.currentIdx + 1) + ' / ' + S.session.questions.length;
+  document.getElementById('ox-target-text').textContent = q.kind === 'letter' ? q.shownLetter.toUpperCase() : q.shownLetter;
+  document.getElementById('ox-target-emoji').textContent = q.emoji;
+  document.getElementById('ox-feedback').textContent = '';
+  document.getElementById('ox-feedback').className = 'quiz-feedback';
+  document.getElementById('ox-container').classList.remove('flash-correct', 'flash-wrong', 'shake');
+  setTimeout(() => playOXSound(q), 500);
+}
+function playOXSound(q) {
+  if (!q) q = S.session.questions[S.session.currentIdx];
+  if (q.kind === 'letter') speakSound(q.sound); else speakWord(q.sound);
+}
+function playCurrentOXSound() { playOXSound(); }
+
+function answerOX(userSaysCorrect) {
+  const q = S.session.questions[S.session.currentIdx];
+  const container = document.getElementById('ox-container');
+  const feedback = document.getElementById('ox-feedback');
+  const right = (userSaysCorrect === q.isCorrect);
+  recordAnswer(q.stageId, q.shownLetter, right);
+
+  if (right) {
+    S.session.score++; S.comboCount++; addStar(1);
+    showCombo();
+    container.classList.add('flash-correct');
+    feedback.textContent = PRAISES[Math.floor(Math.random()*PRAISES.length)] + ' 🎉';
+    feedback.className = 'quiz-feedback correct';
+    speakPraise();
+    setTimeout(() => {
+      S.session.currentIdx++;
+      if (S.session.currentIdx >= S.session.questions.length) endSession();
+      else loadOXQuestion();
+    }, 1200);
+  } else {
+    S.comboCount = 0;
+    container.classList.add('shake', 'flash-wrong');
+    feedback.textContent = ENCOURAGES[Math.floor(Math.random()*ENCOURAGES.length)];
+    feedback.className = 'quiz-feedback wrong';
+    speakPoppi('wrong');
+    setTimeout(() => container.classList.remove('shake'), 400);
+    // Same question again - do NOT advance, let them retry!
+  }
+}
+
+// ============================================================
+//  GAME: CHOICE
+// ============================================================
+function initChoice() {
+  generateChoiceQuestions();
+  S.session.currentIdx = 0; S.session.score = 0; S.comboCount = 0;
+  loadChoiceQuestion();
+  document.getElementById('choice-star-display').textContent = '⭐ ' + S.data.stars;
+  showScreen('screen-choice');
+}
+
+function generateChoiceQuestions() {
+  const stage = STAGES.find(s => s.id === S.stageId);
+  const prevStage = STAGES.find(s => s.id === S.stageId - 1);
+  const qs = [];
+  stage.letters.forEach((l, i) => {
+    const w1 = getRandomItem(stage.letters, l);
+    const w2 = getRandomItem(stage.letters, l, w1);
+    const choices = [l, w1, w2].filter(Boolean);
+    qs.push({ kind:'letter', sound:lwFor(stage.id,l), answer:l, emoji:stage.letterEmojis[i], choices:shuffleArray(choices), stageId:stage.id });
+  });
+  if (prevStage) {
+    shuffleArray([...Array(prevStage.letters.length).keys()]).slice(0,2).forEach(i => {
+      const l = prevStage.letters[i];
+      const w1 = getRandomItem(prevStage.letters, l);
+      const w2 = getRandomItem(prevStage.letters, l, w1);
+      qs.push({ kind:'letter', sound:lwFor(prevStage.id,l), answer:l, emoji:prevStage.letterEmojis[i], choices:shuffleArray([l,w1,w2].filter(Boolean)), stageId:prevStage.id });
+    });
+  }
+  const wi = Math.floor(Math.random()*stage.words.length);
+  const ww = stage.words[wi];
+  const ww1 = getRandomItem(stage.words, ww);
+  const ww2 = getRandomItem(stage.words, ww, ww1);
+  qs.push({ kind:'word', sound:ww, answer:ww, emoji:stage.wordEmojis[wi], choices:shuffleArray([ww,ww1,ww2].filter(Boolean)), stageId:stage.id });
+  S.session.questions = shuffleArray(qs);
+}
+
+function loadChoiceQuestion() {
+  const q = S.session.questions[S.session.currentIdx];
+  document.getElementById('choice-counter').textContent = (S.session.currentIdx + 1) + ' / ' + S.session.questions.length;
+  document.getElementById('choice-question-text').textContent = q.kind === 'letter' ? '어떤 글자일까요?' : '어떤 단어일까요?';
+  document.getElementById('choice-feedback').textContent = '';
+  document.getElementById('choice-feedback').className = 'quiz-feedback';
+  document.getElementById('choice-container').classList.remove('flash-correct', 'flash-wrong');
+
+  const grid = document.getElementById('choice-grid');
+  grid.innerHTML = '';
+  q.choices.forEach((ch, i) => {
+    const card = document.createElement('div');
+    card.className = 'choice-card fade-in';
+    card.style.animationDelay = (i * 0.08) + 's';
+    const isWord = q.kind === 'word';
+    const emoji = isWord ? getWordEmoji(ch, q.stageId) : getLetterEmoji(ch, q.stageId);
+    card.innerHTML = `
+      <div class="choice-card-${isWord ? 'word' : 'text'}">${ch.toUpperCase()}</div>
+      <div class="choice-card-emoji">${emoji}</div>
+    `;
+    card.onclick = () => answerChoice(ch, card, q);
+    grid.appendChild(card);
+  });
+  setTimeout(() => playChoiceSound(q), 500);
+}
+function playChoiceSound(q) {
+  if (!q) q = S.session.questions[S.session.currentIdx];
+  if (q.kind === 'letter') speakSound(q.sound); else speakWord(q.sound);
+}
+function playCurrentChoiceSound() { playChoiceSound(); }
+
+function answerChoice(selected, cardEl, q) {
+  const container = document.getElementById('choice-container');
+  const feedback = document.getElementById('choice-feedback');
+  const correct = selected === q.answer;
+  recordAnswer(q.stageId, q.answer, correct);
+
+  if (correct) {
+    cardEl.classList.add('selected-correct');
+    S.session.score++; S.comboCount++; addStar(1);
+    showCombo();
+    container.classList.add('flash-correct');
+    feedback.textContent = PRAISES[Math.floor(Math.random()*PRAISES.length)] + ' ⭐';
+    feedback.className = 'quiz-feedback correct';
+    speakPraise();
+    setTimeout(() => {
+      S.session.currentIdx++;
+      if (S.session.currentIdx >= S.session.questions.length) endSession();
+      else loadChoiceQuestion();
+    }, 1200);
+  } else {
+    S.comboCount = 0;
+    cardEl.classList.add('selected-wrong');
+    container.classList.add('flash-wrong');
+    feedback.textContent = ENCOURAGES[Math.floor(Math.random()*ENCOURAGES.length)];
+    feedback.className = 'quiz-feedback wrong';
+    speakPoppi('wrong');
+    // Same question again - do NOT advance
+  }
+}
+
+// ============================================================
+//  GAME: BUILDER
+// ============================================================
+let builderFilledSlots = [];
+let builderWrongThisWord = false;
+
+function initBuilder() {
+  generateBuilderQuestions();
+  S.session.currentIdx = 0; S.session.score = 0; S.comboCount = 0;
+  loadBuilderQuestion();
+  document.getElementById('builder-star-display').textContent = '⭐ ' + S.data.stars;
+  showScreen('screen-builder');
+}
+
+function generateBuilderQuestions() {
+  const stage = STAGES.find(s => s.id === S.stageId);
+  const prevStage = STAGES.find(s => s.id === S.stageId - 1);
+  const qs = [];
+  shuffleArray([...stage.words]).slice(0,5).forEach(w => {
+    const idx = stage.words.indexOf(w);
+    qs.push({ word:w, emoji:stage.wordEmojis[idx], letters:w.split(''), stageId:stage.id });
+  });
+  if (prevStage) {
+    shuffleArray([...prevStage.words]).slice(0,3).forEach(w => {
+      const idx = prevStage.words.indexOf(w);
+      qs.push({ word:w, emoji:prevStage.wordEmojis[idx], letters:w.split(''), stageId:prevStage.id });
+    });
+  }
+  S.session.questions = shuffleArray(qs).slice(0, 8);
+}
+
+function loadBuilderQuestion() {
+  const q = S.session.questions[S.session.currentIdx];
+  builderFilledSlots = []; builderWrongThisWord = false;
+  document.getElementById('builder-counter').textContent = (S.session.currentIdx + 1) + ' / ' + S.session.questions.length;
+  document.getElementById('builder-hint-emoji').textContent = q.emoji;
+  document.getElementById('builder-hint').textContent = '글자를 순서대로 눌러 단어를 완성하세요! 🧩';
+  document.getElementById('builder-feedback').textContent = '';
+  document.getElementById('builder-feedback').className = 'quiz-feedback';
+
+  const slotsEl = document.getElementById('builder-slots');
+  slotsEl.innerHTML = '';
+  q.letters.forEach(() => {
+    const slot = document.createElement('div');
+    slot.className = 'builder-slot';
+    slotsEl.appendChild(slot);
+  });
+
+  const tilesEl = document.getElementById('builder-tiles');
+  tilesEl.innerHTML = '';
+  shuffleArray([...q.letters]).forEach((letter) => {
+    const tile = document.createElement('div');
+    tile.className = 'builder-tile';
+    tile.textContent = letter.toUpperCase();
+    tile.dataset.letter = letter;
+    tile.style.transform = `rotate(${(Math.random()-0.5)*10}deg)`;
+    tile.onclick = () => placeBuilderTile(letter, tile);
+    tilesEl.appendChild(tile);
+  });
+
+  setTimeout(() => playBuilderSound(q), 500);
+}
+function playBuilderSound(q) {
+  if (!q) q = S.session.questions[S.session.currentIdx];
+  speakWord(q.word);
+}
+function playCurrentBuilderSound() { playBuilderSound(); }
+
+function placeBuilderTile(letter, tileEl) {
+  const q = S.session.questions[S.session.currentIdx];
+  const slots = document.querySelectorAll('.builder-slot');
+  const nextEmptyIdx = builderFilledSlots.length;
+  if (nextEmptyIdx >= q.letters.length || tileEl.classList.contains('used')) return;
+
+  // 누른 알파벳 소리 읽어주기
+  speakWord(letter);
+
+  if (letter === q.letters[nextEmptyIdx]) {
+    builderFilledSlots.push(letter);
+    slots[nextEmptyIdx].textContent = letter.toUpperCase();
+    slots[nextEmptyIdx].classList.add('filled');
+    tileEl.classList.add('used');
+
+    if (builderFilledSlots.length === q.letters.length) {
+      recordAnswer(q.stageId, q.word, !builderWrongThisWord);
+      if (!builderWrongThisWord) { S.session.score++; S.comboCount++; addStar(1); showCombo(); }
+      document.getElementById('builder-hint').textContent = '완성! 🎉';
+      document.getElementById('builder-feedback').textContent = PRAISES[Math.floor(Math.random()*PRAISES.length)] + ' 👏';
+      document.getElementById('builder-feedback').className = 'quiz-feedback correct';
+      // 완성된 단어 전체 발음
+      setTimeout(() => speakWord(q.word), 300);
+      setTimeout(() => {
+        S.session.currentIdx++;
+        if (S.session.currentIdx >= S.session.questions.length) endSession();
+        else loadBuilderQuestion();
+      }, 1800);
+    }
+  } else {
+    builderWrongThisWord = true;
+    tileEl.style.animation = 'shake 0.4s ease';
+    setTimeout(() => tileEl.style.animation = '', 400);
+    document.getElementById('builder-feedback').textContent = ENCOURAGES[Math.floor(Math.random()*ENCOURAGES.length)];
+    document.getElementById('builder-feedback').className = 'quiz-feedback wrong';
+    speakPoppi('wrong');
+  }
+}
+
+// ============================================================
+//  SESSION END
+// ============================================================
+function endSession() {
+  const earnedStars = S.session.score;
+  const child = CHILDREN[S.childId];
+  document.getElementById('end-star-display').textContent = '⭐ ' + S.data.stars;
+  document.getElementById('session-end-stars').textContent = '+' + earnedStars + ' ⭐';
+
+  const justMastered = isStageMastered(S.stageId) && !getStageProgress(S.stageId).rewardGiven;
+  const badges = [];
+  if (S.comboCount >= 3) badges.push('🔥 ' + S.comboCount + '연속 정답');
+  if (S.session.score === S.session.questions.length) badges.push('💯 퍼펙트 스코어');
+  if (S.session.score >= Math.ceil(S.session.questions.length * 0.8)) badges.push('🌟 훌륭해요');
+  if (earnedStars > 0) badges.push('⭐ ' + earnedStars + '개 획득');
+  S.session.badges = badges;
+
+  const badgesEl = document.getElementById('session-end-badges');
+  badgesEl.innerHTML = '';
+  badges.forEach(b => {
+    const div = document.createElement('div');
+    div.className = 'badge';
+    div.textContent = b;
+    badgesEl.appendChild(div);
+  });
+
+  const friendBox = document.getElementById('session-end-friend');
+  friendBox.classList.add('hidden');
+  friendBox.innerHTML = '';
+
+  const masteredBox = document.getElementById('session-end-mastered');
+  masteredBox.classList.add('hidden');
+  masteredBox.innerHTML = '';
+
+  const btn = document.getElementById('session-end-btn');
+  btn.textContent = '모험 지도로 가기 🗺️';
+  btn.onclick = goToMap;
+
+  if (justMastered) {
+    const p = getStageProgress(S.stageId);
+    p.rewardGiven = true;
+    S.data.progress[S.stageId] = p;
+    saveDB();
+    const friend = ANIMAL_FRIENDS.find(f => f.id === S.stageId);
+    const stage = STAGES.find(s => s.id === S.stageId);
+
+    if (S.stageId === 10) {
+      document.getElementById('session-end-emoji').textContent = '🏆';
+      document.getElementById('session-end-title').textContent = '10단계 정복! ' + child.name + ' 최고!';
+      document.getElementById('session-end-msg').textContent = '파닉스 모험단이 완성됐어요!';
+      friendBox.innerHTML = `<div class="sef-emoji">${friend.emoji}</div><div class="sef-text">${friend.line}</div><div class="sef-sub">동물 친구 10명이 모두 모였어요! 🎊</div>`;
+      friendBox.classList.remove('hidden');
+      btn.textContent = '인증서 받기 🏆';
+      btn.onclick = showCertificate;
+      speakPoppi('mastered');
+    } else {
+      document.getElementById('session-end-emoji').textContent = '🏆';
+      document.getElementById('session-end-title').textContent = S.stageId + '단계 정복! ' + child.name + ' 최고!';
+      document.getElementById('session-end-msg').textContent = '다음 단계가 열렸어요! 🔓';
+      friendBox.innerHTML = `<div class="sef-emoji">${friend.emoji}</div><div class="sef-text">${friend.line}</div><div class="sef-sub">새 친구와 함께 다음 모험을 떠나요!</div>`;
+      friendBox.classList.remove('hidden');
+      speakPoppi('mastered');
+    }
+  } else {
+    if (S.session.score >= Math.ceil(S.session.questions.length * 0.8)) {
+      document.getElementById('session-end-emoji').textContent = '🎉';
+      document.getElementById('session-end-title').textContent = '잘했어요, ' + child.name + '!';
+      document.getElementById('session-end-msg').textContent = '한 판을 끝까지 해냈어요!';
+    } else {
+      document.getElementById('session-end-emoji').textContent = '💪';
+      document.getElementById('session-end-title').textContent = '잘 해냈어, ' + child.name + '!';
+      document.getElementById('session-end-msg').textContent = '한 번 더 하면 더 잘할 수 있어요!';
+    }
+  }
+  showScreen('screen-session-end');
+}
+
+// ============================================================
+//  CERTIFICATE
+// ============================================================
+function showCertificate() {
+  const child = CHILDREN[S.childId];
+  document.getElementById('cert-child-name').textContent = child.name;
+  const el = document.getElementById('cert-friends');
+  el.innerHTML = '';
+  ANIMAL_FRIENDS.forEach(f => {
+    const item = document.createElement('div');
+    item.className = 'cert-friend pop-in';
+    item.innerHTML = `<div class="cf-emoji">${f.emoji}</div><div class="cf-name">${f.name}</div>`;
+    el.appendChild(item);
+  });
+  showScreen('screen-certificate');
+}
+
+// ============================================================
+//  REWARD SHOP
+// ============================================================
+function renderShop() {
+  const grid = document.getElementById('shop-grid');
+  grid.innerHTML = '';
+  const rewards = S.data.rewards || [];
+  if (rewards.length === 0) {
+    grid.innerHTML = '<div class="shop-empty">상점에 보상이 없어요.<br>부모님 대시보드에서 보상을 추가해주세요! 🎁</div>';
+    return;
+  }
+  rewards.forEach((r, idx) => {
+    const affordable = S.data.stars >= r.points;
+    const alreadyRedeemed = (S.data.redeemed || []).includes(r.id);
+    const item = document.createElement('div');
+    item.className = 'shop-item ' + (affordable && !alreadyRedeemed ? 'affordable' : 'locked');
+    item.innerHTML = `
+      <div class="shop-item-cost"><span>⭐</span>${r.points}</div>
+      <div class="shop-item-info">
+        <div class="shop-item-name">${r.text}</div>
+        <div class="shop-item-desc">${alreadyRedeemed ? '이미 교환한 보상' : (affordable ? '터치해서 교환!' : '별이 더 필요해요')}</div>
+      </div>
+      <div class="shop-item-status ${affordable && !alreadyRedeemed ? 'ready' : ''}">${alreadyRedeemed ? '완료' : (affordable ? '교환' : '잠김')}</div>
+    `;
+    if (affordable && !alreadyRedeemed) {
+      item.onclick = () => redeemReward(idx);
+    }
+    grid.appendChild(item);
+  });
+}
+
+function redeemReward(idx) {
+  const r = S.data.rewards[idx];
+  if (!r || S.data.stars < r.points) return;
+  S.data.stars -= r.points;
+  if (!S.data.redeemed) S.data.redeemed = [];
+  S.data.redeemed.push(r.id);
+  saveDB();
+  updateStarDisplay();
+  document.getElementById('shop-points').textContent = '⭐ ' + S.data.stars;
+  renderShop();
+  showRewardBox(r.text);
+}
+
+// ============================================================
+//  REWARD BOX ANIMATION
+// ============================================================
+function showRewardBox(rewardText) {
+  const overlay = document.getElementById('reward-box-overlay');
+  const content = document.getElementById('reward-box-content');
+  content.innerHTML = '<div class="reward-box" id="reward-box-closed" onclick="openRewardBox()">🎁</div>';
+  overlay.classList.remove('hidden');
+  overlay.classList.add('show');
+  window._pendingRewardText = rewardText;
+  speakKorean('상자를 열어봐!');
+}
+
+function openRewardBox() {
+  const rewardText = window._pendingRewardText || '보상';
+  const content = document.getElementById('reward-box-content');
+  content.innerHTML = `
+    <div class="reward-box-open">
+      <div class="box-title">🎉 축하해요!</div>
+      <div class="box-reward">${rewardText}</div>
+      <button class="box-btn" onclick="closeRewardBox()">확인</button>
+    </div>
+  `;
+  spawnConfetti();
+  speakKorean(rewardText + ' 획득!');
+}
+
+function closeRewardBox() {
+  const overlay = document.getElementById('reward-box-overlay');
+  overlay.classList.remove('show');
+  overlay.classList.add('hidden');
+  document.getElementById('confetti-container').innerHTML = '';
+}
+
+function spawnConfetti() {
+  const container = document.getElementById('confetti-container');
+  container.classList.remove('hidden');
+  container.innerHTML = '';
+  const colors = ['#FF70A6', '#FF9F1C', '#FFD166', '#2EC4B6', '#9D4EDD', '#00B4D8'];
+  for (let i = 0; i < 40; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.animationDelay = (Math.random() * 0.5) + 's';
+    c.style.width = (6 + Math.random() * 6) + 'px';
+    c.style.height = (6 + Math.random() * 6) + 'px';
+    container.appendChild(c);
+  }
+  setTimeout(() => container.innerHTML = '', 2000);
+}
+
+// ============================================================
+//  PARENT DASHBOARD
+// ============================================================
+function renderHeatmap() {
+  const grid = document.getElementById('heatmap-grid');
+  grid.innerHTML = '';
+  STAGES.forEach(stage => {
+    const status = getStatusColor(stage.id);
+    const acc = getStageAccuracy(stage.id);
+    const card = document.createElement('div');
+    card.className = 'heatmap-card ' + status;
+    card.innerHTML = `
+      <div class="heatmap-stage-num">${stage.id}단계</div>
+      <div class="heatmap-stage-name">${stage.name}</div>
+      <div class="heatmap-accuracy">${acc < 0 ? '-' : acc + '%'}</div>
+    `;
+    const p = getStageProgress(stage.id);
+    if (p.totalQ > 0) {
+      const detail = document.createElement('div');
+      detail.className = 'heatmap-detail';
+      Object.entries(p.itemStats).forEach(([item, stats]) => {
+        detail.innerHTML += `<div class="heatmap-detail-item"><span>${item}</span><span>${stats.correct}/${stats.seen}</span></div>`;
+      });
+      card.appendChild(detail);
+      card.onclick = () => { const d = card.querySelector('.heatmap-detail'); if (d) d.classList.toggle('open'); };
+    }
+    grid.appendChild(card);
+  });
+}
+
+function renderRewardList() {
+  const list = document.getElementById('reward-list');
+  list.innerHTML = '';
+  const rewards = S.data.rewards || [];
+  if (rewards.length === 0) {
+    list.innerHTML = '<div class="reward-empty">등록된 보상이 없어요. 위에서 추가해보세요!</div>';
+    return;
+  }
+  rewards.forEach((r, idx) => {
+    const item = document.createElement('div');
+    item.className = 'reward-list-item';
+    item.innerHTML = `
+      <div class="reward-list-points">⭐ ${r.points}</div>
+      <div class="reward-list-text">${r.text}</div>
+      <div class="reward-list-del" onclick="deleteReward(${idx})">×</div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+function addReward() {
+  const pointsInput = document.getElementById('reward-points-input');
+  const textInput = document.getElementById('reward-text-input');
+  const pointsVal = pointsInput.value;
+  const textVal = textInput.value.trim();
+  const points = Number(pointsVal);
+  if (!pointsVal || isNaN(points) || points < 1 || !textVal) return;
+  if (!S.data.rewards) S.data.rewards = [];
+  S.data.rewards.push({ id: 'r' + Date.now() + Math.random(), points: points, text: textVal });
+  S.data.rewards.sort((a, b) => a.points - b.points);
+  pointsInput.value = ''; textInput.value = '';
+  saveDB();
+  renderRewardList();
+  renderShop();
+}
+
+function deleteReward(idx) {
+  S.data.rewards.splice(idx, 1);
+  saveDB();
+  renderRewardList();
+  renderShop();
+}
+
+// ============================================================
+//  REWARD REQUESTS (Child requests, Parent approves)
+// ============================================================
+function requestReward() {
+  const pointsInput = document.getElementById('shop-request-points');
+  const textInput = document.getElementById('shop-request-text');
+  const pointsVal = pointsInput.value;
+  const textVal = textInput.value.trim();
+  const points = Number(pointsVal);
+  if (!pointsVal || isNaN(points) || points < 1 || !textVal) {
+    alert('별 개수와 보상 이름을 모두 입력해주세요!');
+    return;
+  }
+  if (!S.data.rewardRequests) S.data.rewardRequests = [];
+  S.data.rewardRequests.push({ id: 'req' + Date.now() + Math.random(), points: points, text: textVal, status: 'pending' });
+  pointsInput.value = ''; textInput.value = '';
+  saveDB();
+  alert('부모님에게 보상 요청을 보냈어요! 📨');
+  speakKorean('부모님에게 요청을 보냈어!');
+}
+
+function renderRewardRequests() {
+  const section = document.getElementById('reward-requests-section');
+  const list = document.getElementById('reward-requests-list');
+  const requests = (S.data.rewardRequests || []).filter(r => r.status === 'pending');
+  if (requests.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+  list.innerHTML = '';
+  requests.forEach((r, idx) => {
+    const item = document.createElement('div');
+    item.className = 'reward-list-item';
+    item.style.background = '#E0F7FA';
+    item.innerHTML = `
+      <div class="reward-list-points">⭐ ${r.points}</div>
+      <div class="reward-list-text">${r.text}</div>
+      <div class="reward-add-btn" style="background:var(--accent-green);" onclick="approveRequest(${idx})">✓</div>
+      <div class="reward-list-del" onclick="rejectRequest(${idx})">×</div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+function approveRequest(idx) {
+  const requests = S.data.rewardRequests || [];
+  const req = requests[idx];
+  if (!req) return;
+  if (!S.data.rewards) S.data.rewards = [];
+  S.data.rewards.push({ id: req.id, points: req.points, text: req.text });
+  S.data.rewards.sort((a, b) => a.points - b.points);
+  req.status = 'approved';
+  saveDB();
+  renderRewardList();
+  renderRewardRequests();
+  renderShop();
+  alert('보상 요청을 승인했어요! 상점에 바로 추가됩니다. ✅');
+}
+
+function rejectRequest(idx) {
+  const requests = S.data.rewardRequests || [];
+  if (requests[idx]) requests[idx].status = 'rejected';
+  saveDB();
+  renderRewardRequests();
+  alert('보상 요청을 거절했어요.');
+}
+
+// ============================================================
+//  UTILS
+// ============================================================
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function getRandomItem(arr, exclude, exclude2) {
+  const f = arr.filter(x => x !== exclude && x !== exclude2);
+  if (!f.length) return null;
+  return f[Math.floor(Math.random()*f.length)];
+}
+function getLetterEmoji(letter, stageId) {
+  const st = STAGES.find(s => s.id === stageId); if (!st) return '🔤';
+  const i = st.letters.indexOf(letter); return i >= 0 ? st.letterEmojis[i] : '🔤';
+}
+function getWordEmoji(word, stageId) {
+  const st = STAGES.find(s => s.id === stageId); if (!st) return '📝';
+  const i = st.words.indexOf(word); return i >= 0 ? st.wordEmojis[i] : '📝';
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+let speechWarmed = false;
+function warmSpeech() {
+  if (speechWarmed || !window.speechSynthesis) return;
+  speechWarmed = true;
+  const u = new SpeechSynthesisUtterance(' '); u.volume = 0; window.speechSynthesis.speak(u); pickVoices();
+}
+document.addEventListener('DOMContentLoaded', () => {
+  if (!window.speechSynthesis) {
+    alert('이 브라우저에서는 소리가 나오지 않을 수 있어요. 크롬 브라우저를 사용하시면 더 좋아요! 😊');
+  }
+  document.body.addEventListener('touchstart', warmSpeech, { once: true });
+  document.body.addEventListener('click', warmSpeech, { once: true });
+});
+</script>
+</body>
+</html>
